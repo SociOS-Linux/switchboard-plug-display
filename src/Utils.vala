@@ -73,11 +73,21 @@ namespace Display.Utils {
     }
 
     public static double get_min_compatible_scale (Gee.LinkedList<Display.Monitor> monitors) {
-        double min_scale = double.MAX;
+        double min_scale = 0.0;
         foreach (var monitor in monitors) {
-            min_scale = double.min (min_scale, monitor.get_max_scale ());
+            min_scale = double.max (min_scale, monitor.get_min_scale ());
         }
 
+warning ("UTILS min compat scale %f", min_scale);
         return min_scale;
+    }
+    public static double get_max_compatible_scale (Gee.LinkedList<Display.Monitor> monitors) {
+        double max_scale = double.MAX;
+        foreach (var monitor in monitors) {
+            max_scale = double.min (max_scale, monitor.get_max_scale ());
+        }
+
+warning ("UTILS max compat scale %f", max_scale);
+        return max_scale;
     }
 }

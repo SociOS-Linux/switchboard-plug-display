@@ -223,7 +223,7 @@ public class Display.MonitorManager : GLib.Object {
     public void set_monitor_config () {
         MutterWriteLogicalMonitor[] logical_monitors = {};
         foreach (var virtual_monitor in virtual_monitors) {
-            debug (@"set config with: active: $(virtual_monitor.is_active)
+            warning (@"set config with: active: $(virtual_monitor.is_active)
                                      x: $(virtual_monitor.x),
                                      y: $(virtual_monitor.y),
                                      scale: $(virtual_monitor.scale),
@@ -269,9 +269,11 @@ public class Display.MonitorManager : GLib.Object {
 
     //TODO: check for compatibility of displays in the same virtualmonitor.
     public void enable_clone_mode () {
+warning ("enable clone mode");
         var clone_virtual_monitor = new Display.VirtualMonitor ();
         clone_virtual_monitor.primary = true;
         clone_virtual_monitor.scale = Utils.get_min_compatible_scale (monitors);
+warning ("clone_virtual monitor scale %f", clone_virtual_monitor.scale);
         clone_virtual_monitor.monitors.add_all (monitors);
         var modes = clone_virtual_monitor.get_available_modes ();
         /*
@@ -315,12 +317,14 @@ public class Display.MonitorManager : GLib.Object {
     }
 
     public void set_scale_on_all_monitors (double new_scale) {
+warning ("MM set scale on all monitors %f", new_scale);
         if (new_scale <= 0.0) {
             return;
         }
 
-        double max_scale = Utils.get_min_compatible_scale (monitors);
+        double max_scale = Utils.get_max_compatible_scale (monitors);
         if (new_scale > max_scale) {
+warning ("new scle exceeds max %f", max_scale);
             return;
         }
 

@@ -109,7 +109,7 @@ public class Display.DisplayWidget : Gtk.EventBox {
 
         resolution_list_store = new Gtk.ListStore (ResolutionColumns.TOTAL, typeof (string), typeof (Display.MonitorMode));
         resolution_combobox = new Gtk.ComboBox.with_model (resolution_list_store);
-        resolution_combobox.sensitive = use_switch.active;
+//        resolution_combobox.sensitive = use_switch.active;
         var text_renderer = new Gtk.CellRendererText ();
         resolution_combobox.pack_start (text_renderer, true);
         resolution_combobox.add_attribute (text_renderer, "text", ResolutionColumns.NAME);
@@ -118,7 +118,7 @@ public class Display.DisplayWidget : Gtk.EventBox {
         rotation_label.halign = Gtk.Align.END;
         rotation_list_store = new Gtk.ListStore (RotationColumns.TOTAL, typeof (string), typeof (int));
         rotation_combobox = new Gtk.ComboBox.with_model (rotation_list_store);
-        rotation_combobox.sensitive = use_switch.active;
+//        rotation_combobox.sensitive = use_switch.active;
         text_renderer = new Gtk.CellRendererText ();
         rotation_combobox.pack_start (text_renderer, true);
         rotation_combobox.add_attribute (text_renderer, "text", RotationColumns.NAME);
@@ -127,7 +127,7 @@ public class Display.DisplayWidget : Gtk.EventBox {
         refresh_label.halign = Gtk.Align.END;
         refresh_list_store = new Gtk.ListStore (RefreshColumns.TOTAL, typeof (string), typeof (Display.MonitorMode));
         refresh_combobox = new Gtk.ComboBox.with_model (refresh_list_store);
-        refresh_combobox.sensitive = use_switch.active;
+//        refresh_combobox.sensitive = use_switch.active;
         text_renderer = new Gtk.CellRendererText ();
         refresh_combobox.pack_start (text_renderer, true);
         refresh_combobox.add_attribute (text_renderer, "text", RefreshColumns.NAME);
@@ -137,6 +137,7 @@ public class Display.DisplayWidget : Gtk.EventBox {
             rotation_list_store.append (out iter);
             rotation_list_store.set (iter, RotationColumns.NAME, ((DisplayTransform) i).to_string (), RotationColumns.VALUE, i);
         }
+        rotation_combobox.set_active (0);
 
         Resolution[] resolutions = {};
         bool resolution_set = false;
@@ -205,28 +206,34 @@ public class Display.DisplayWidget : Gtk.EventBox {
         display_window.attached_to = this;
 
         destroy.connect (() => display_window.destroy ());
-        virtual_monitor.bind_property ("is_mirror", use_switch, "sensitive", GLib.BindingFlags.INVERT_BOOLEAN);
+        virtual_monitor.bind_property ("is_mirror", use_switch, "sensitive",  BindingFlags.DEFAULT | BindingFlags.INVERT_BOOLEAN);
+        virtual_monitor.bind_property ("is-active", resolution_combobox, "sensitive", BindingFlags.DEFAULT);
+        virtual_monitor.bind_property ("is-active", rotation_combobox, "sensitive", BindingFlags.DEFAULT);
+        virtual_monitor.bind_property ("is-active", refresh_combobox, "sensitive", BindingFlags.DEFAULT);
+        use_switch.bind_property ("active", virtual_monitor, "is-active", BindingFlags.BIDIRECTIONAL);
+
         use_switch.notify["active"].connect (() => {
             virtual_monitor.is_active = use_switch.active;
-            resolution_combobox.sensitive = virtual_monitor.is_active;
-            rotation_combobox.sensitive = virtual_monitor.is_active;
-            refresh_combobox.sensitive = virtual_monitor.is_active;
-
-            if (rotation_combobox.active == -1) rotation_combobox.set_active (0);
-            if (resolution_combobox.active == -1) resolution_combobox.set_active (0);
-            if (refresh_combobox.active == -1) refresh_combobox.set_active (0);
+//            resolution_combobox.sensitive = virtual_monitor.is_active;
+//            rotation_combobox.sensitive = virtual_monitor.is_active;
+//            refresh_combobox.sensitive = virtual_monitor.is_active;
 
             if (use_switch.active) {
                 get_style_context ().remove_class ("disabled");
             } else {
                 get_style_context ().add_class ("disabled");
             }
+
             active_changed ();
         });
 
-        if (!virtual_monitor.is_active) {
-            get_style_context ().add_class ("disabled");
-        }
+//        virtual_monitor.notify["is-active"].connect (() => {
+
+//        }
+
+//        if (!virtual_monitor.is_active) {
+//            get_style_context ().add_class ("disabled");
+//        }
 
         resolution_combobox.changed.connect (() => {
             Value val;
@@ -323,7 +330,7 @@ public class Display.DisplayWidget : Gtk.EventBox {
         refresh_list_store.clear ();
 
         Gtk.TreeIter iter;
-        int added = 0;
+//        int added = 0;
         if (resolution_combobox.get_active_iter (out iter)) {
             Value val;
             resolution_list_store.get_value (iter, ResolutionColumns.MODE, out val);
@@ -358,17 +365,21 @@ public class Display.DisplayWidget : Gtk.EventBox {
                 var freq_name = _("%g Hz").printf (Math.roundf ((float)mode.frequency));
                 refresh_list_store.append (out iter);
                 refresh_list_store.set (iter, ResolutionColumns.NAME, freq_name, ResolutionColumns.MODE, mode);
-                added++;
+//                added++;
                 if (mode.is_current) {
                     refresh_combobox.set_active_iter (iter);
                     refresh_set = true;
                 }
             }
+
+            if (!refresh_set) {
+                refresh_combobox.set_active (0);
+            }
         }
 
-        if (virtual_monitor.is_active) {
-            refresh_combobox.sensitive = added > 1;
-        }
+//        if (virtual_monitor.is_active) {
+//            refresh_combobox.sensitive = added > 1;
+//        }
     }
 
     private void on_monitor_modes_changed () {

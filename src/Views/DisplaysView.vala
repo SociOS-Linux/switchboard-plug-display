@@ -100,10 +100,6 @@ public class Display.DisplaysView : Gtk.Grid {
             add (action_bar);
             show_all ();
 
-            displays_overlay.configuration_changed.connect ((changed) => {
-                apply_button.sensitive = changed;
-            });
-
             unowned Display.MonitorManager monitor_manager = Display.MonitorManager.get_default ();
             mirror_grid.sensitive = monitor_manager.monitors.size > 1;
             monitor_manager.notify["monitor-number"].connect (() => {
@@ -118,12 +114,25 @@ public class Display.DisplaysView : Gtk.Grid {
             });
 
             dpi_combo.active = (int)monitor_manager.virtual_monitors[0].scale - 1;
+            mirror_switch.active = monitor_manager.is_mirrored;
+
+            displays_overlay.configuration_changed.connect ((changed) => {
+warning ("configuration changed");
+                apply_button.sensitive = changed;
+warning ("setting dpi %i", (int)monitor_manager.virtual_monitors[0].scale - 1);
+                dpi_combo.active = (int)monitor_manager.virtual_monitors[0].scale - 1;
+warning ("setting mirror switch %s", monitor_manager.is_mirrored.to_string ());
+                    mirror_switch.active = monitor_manager.is_mirrored;
+            });
 
             dpi_combo.changed.connect (() => {
                 monitor_manager.set_scale_on_all_monitors ((double)(dpi_combo.active + 1));
             });
 
-            mirror_switch.active = monitor_manager.is_mirrored;
+
+
+//            monitor_manager.bind_property ("is-mirrored", mirror_switch, "active", BindingFlags.BIDIRECTIONAL);
+
             mirror_switch.notify["active"].connect (() => {
                 if (mirror_switch.active) {
                     monitor_manager.enable_clone_mode ();

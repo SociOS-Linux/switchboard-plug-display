@@ -69,6 +69,15 @@ public class Display.Monitor : GLib.Object {
         return max_scale;
     }
 
+    public double get_min_scale () {
+        double min_scale = 1.0;
+        foreach (var mode in modes) {
+            min_scale = double.max (min_scale, mode.supported_scales[0]);
+        }
+
+        return min_scale;
+    }
+
     construct {
         modes = new Gee.LinkedList<Display.MonitorMode> ();
     }
